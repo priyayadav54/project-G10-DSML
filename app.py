@@ -332,24 +332,29 @@ try:
     # --- Hybrid ---
     with tab3:
         st.header("Hybrid Recommendation")
+
         user_id_input = st.number_input(
-            "Enter User ID",
-            min_value=1,
-            max_value=ratings_df['user_id'].max(),
-            step=1,
-            value=1,
-            key="user_id_hybrid"
+            "Enter User ID", 
+            min_value=1, 
+            max_value=ratings_df['user_id'].max(), 
+            step=1, 
+            value=1
         )
+
+        movie_title_options = [""] + sorted(movies_df['title'].unique().tolist())
         movie_title_input = st.selectbox(
-            "Select a Movie (optional)",
-            options=[""] + sorted(movies_df['title'].unique().tolist()),
-            index=0,
-            key="movie_title_hybrid"
+            "Select a Movie (optional)", 
+            options=movie_title_options,
+            index=0
         )
-        if st.button("Get Hybrid Recommendations", key="get_hybrid_recs"):
+
+        if st.button("Get Hybrid Recommendations"):
+            # If the user leaves the movie blank, pass None
+            movie_title = movie_title_input if movie_title_input.strip() else None
+
             hybrid_recs = hybrid_recommender(
-                user_id=user_id_input if user_id_input else None,
-                movie_title=movie_title_input if movie_title_input else None or "",
+                user_id=user_id_input,
+                movie_title=movie_title,
                 ratings_df=ratings_df,
                 user_item_matrix=user_item_matrix,
                 nmf_model=nmf_model,
@@ -358,14 +363,11 @@ try:
                 alpha=0.5,
                 top_n=5
             )
+
             if not hybrid_recs.empty:
                 st.write("Top Hybrid Recommendations:")
-                # Use a more attractive display for recommendations
-                st.markdown("---")
-                emojis = ["🌟", "✨", "🔥", "💫", "👍"]
-                for i, (_, row) in enumerate(hybrid_recs.iterrows()):
-                    st.markdown(f"**{emojis[i % len(emojis)]} {row['title']}** (Score: {row['hybrid_score']:.2f})")
-                st.markdown("---")
+                for idx, row in hybrid_recs.iterrows():
+                    st.markdown(f"**{row['title']}** (Score: {row['score']:.2f})")
             else:
                 st.warning("No recommendations could be generated.")
 
@@ -388,7 +390,7 @@ try:
 
         movies_per_page = 5
 
-        st.markdown("### 🎥 Please rate these movies by clicking stars:")
+        st.markdown("### 🎥 Please rate these movies by clicking stars (optional):")
 
         # Get unrated movies for the current user
         if st.session_state.unrated_movies_for_feedback.empty:
@@ -407,13 +409,14 @@ try:
             for _, row in movies_to_rate.iterrows():
                 rating = st.radio(
                     f"⭐ {row['title']}",
-                    options=[1, 2, 3, 4, 5],
-                    format_func=lambda x: "⭐" * x,
+                    options=[None, 1, 2, 3, 4, 5],
+                    format_func=lambda x: "Not Rated" if x is None else "⭐" * x,
                     horizontal=True,
-                    index=2,  # Initial rating is 3 (index 2 for 1,2,3,4,5)
+                    index=0,  # Initial selection is "Not Rated"
                     key=f"rate_{user_id_feedback}_{row['movie_id']}_{st.session_state.feedback_page}"
                 )
-                feedback_ratings[row['movie_id']] = rating
+                if rating is not None:
+                    feedback_ratings[row['movie_id']] = rating
         else:
             st.info("You've rated all available movies for this user ID! Try a different user ID or reset the app.")
 
@@ -447,7 +450,6 @@ try:
                 load_data.clear()
                 # Reload data to ensure recommendations are based on updated ratings_df
                 _, ratings_df, _, tfidf_matrix, _ = load_data()
-
 
                 liked_ids = new_feedback[new_feedback['rating'] >= 4]['movie_id'].tolist()
                 if liked_ids:
