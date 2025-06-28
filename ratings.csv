@@ -1,0 +1,21 @@
+user_id,movie_id,title,feedback_rating,rating
+1,408,"Close Shave, A (1995)",4.0,
+1,275,Sense and Sensibility (1995),4.0,
+1,433,Heathers (1989),2.0,
+1,318,Schindler's List (1993),3.0,
+1,655,Stand by Me (1986),4.0,
+1,408,"Close Shave, A (1995)",4.0,
+1,275,Sense and Sensibility (1995),3.0,
+1,433,Heathers (1989),3.0,
+1,318,Schindler's List (1993),4.0,
+1,655,Stand by Me (1986),1.0,
+1,1606,,,4.0
+1,484,,,3.0
+1,204,,,5.0
+1,50,,,3.0
+1,939,,,1.0
+10,1606,,,4.0
+10,484,,,3.0
+10,204,,,2.0
+10,50,,,5.0
+10,939,,,3.0

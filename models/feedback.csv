@@ -1,0 +1,16 @@
+user_id,movie_id,title,feedback_rating
+1,408,"Close Shave, A (1995)",4
+1,275,Sense and Sensibility (1995),4
+1,433,Heathers (1989),4
+1,318,Schindler's List (1993),3
+1,655,Stand by Me (1986),3
+2,124,Lone Star (1996),2
+2,9,Dead Man Walking (1995),2
+2,137,Big Night (1996),2
+2,116,Cold Comfort Farm (1995),2
+2,181,Return of the Jedi (1983),2
+1,408,"Close Shave, A (1995)",3
+1,275,Sense and Sensibility (1995),3
+1,433,Heathers (1989),3
+1,318,Schindler's List (1993),5
+1,655,Stand by Me (1986),5
