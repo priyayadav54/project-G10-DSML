@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import pickle
 from sklearn.metrics.pairwise import cosine_similarity
+from hybrid import hybrid_recommender
+
 
 # Set page configuration
 st.set_page_config(
@@ -19,15 +21,15 @@ st.write("Get personalized movie recommendations based on User ID or Movie Name!
 @st.cache_data
 def load_data():
     # Load pre-trained models and data
-    with open('project-G10-DSML/models/movies.pkl', 'rb') as f:
+    with open('./models/movies.pkl', 'rb') as f:
         movies_df = pickle.load(f)
-    with open('project-G10-DSML/models/ratings.pkl', 'rb') as f:
+    with open('./models/ratings.pkl', 'rb') as f:
         ratings_df = pickle.load(f)
-    with open('project-G10-DSML/models/nmf_model.pkl', 'rb') as f:
+    with open('./models/nmf_model.pkl', 'rb') as f:
         nmf_model = pickle.load(f)
-    with open('project-G10-DSML/models/tfidf_matrix.pkl', 'rb') as f:
+    with open('./models/tfidf_matrix.pkl', 'rb') as f:
         tfidf_matrix = pickle.load(f)
-    with open('project-G10-DSML/models/user_item_matrix.pkl', 'rb') as f:
+    with open('./models/user_item_matrix.pkl', 'rb') as f:
         user_item_matrix = pickle.load(f)
     
     return movies_df, ratings_df, nmf_model, tfidf_matrix, user_item_matrix
@@ -36,7 +38,7 @@ try:
     movies_df, ratings_df, nmf_model, tfidf_matrix, user_item_matrix = load_data()
 
     # Create tabs for different recommendation types
-    tab1, tab2 = st.tabs(["User-based Recommendation", "Movie-based Recommendation"])
+    tab1, tab2, tab3 = st.tabs(["User-based Recommendation", "Movie-based Recommendation","Hybrid Recommendation"])
 
     with tab1:
         st.header("User-based Recommendation")
@@ -95,6 +97,42 @@ try:
                 
                 st.write("Similar movies you might like:")
                 st.dataframe(recommendations[['title', 'similarity']])
+    with tab3:
+        st.header("Hybrid Recommendation")
+
+        user_id_input = st.number_input(
+            "Enter User ID ", 
+            min_value=1, 
+            max_value=ratings_df['user_id'].max(), 
+            step=1, 
+            value=1
+        )
+
+        movie_title_input = st.selectbox(
+            "Select a Movie (optional)", 
+            options=[""] + sorted(movies_df['title'].unique().tolist()),
+            index=0
+        )
+
+        if st.button("Get Hybrid Recommendations"):
+            hybrid_recs = hybrid_recommender(
+                user_id=user_id_input if user_id_input else None,
+                movie_title=movie_title_input if movie_title_input else None or "",  # Handle empty string
+                ratings_df=ratings_df,
+                user_item_matrix=user_item_matrix,
+                nmf_model=nmf_model,
+                movies_df=movies_df,
+                tfidf_matrix=tfidf_matrix,
+                alpha=0.5,
+                top_n=5
+            )
+
+            if not hybrid_recs.empty:
+                st.write("Top Hybrid Recommendations:")
+                st.dataframe(hybrid_recs)
+            else:
+                st.warning("No recommendations could be generated.")
+
 
 except FileNotFoundError:
     st.error("Please ensure that 'movies.csv' and 'ratings.csv' files are present in the directory.")
